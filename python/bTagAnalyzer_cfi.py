@@ -8,6 +8,7 @@ bTagAnalyzer = cms.EDAnalyzer("BTagAnalyzer",
     slComputer = cms.string('candidateCombinedSecondaryVertexSoftLeptonComputer'),
     # TagInfos (need to omit the 'TagInfos' part from the label)
     deepFlavourTagInfos = cms.string('pfDeepFlavour'),
+    deepDoubleBTagInfos = cms.string('pfDeepDoubleB'),
     ipTagInfos = cms.string('pfImpactParameter'),
     svTagInfos = cms.string('pfInclusiveSecondaryVertexFinder'),
     svNegTagInfos = cms.string('pfInclusiveSecondaryVertexFinderNegative'),
@@ -62,5 +63,5 @@ bTagAnalyzer = cms.EDAnalyzer("BTagAnalyzer",
     CvsBPosCJetTags = cms.string('pfPositiveCombinedCvsBJetTags'),
     CvsLCJetTags = cms.string('pfCombinedCvsLJetTags'),
     CvsLNegCJetTags = cms.string('pfNegativeCombinedCvsLJetTags'),
-    CvsLPosCJetTags = cms.string('pfPositiveCombinedCvsLJetTags')   
+    CvsLPosCJetTags = cms.string('pfPositiveCombinedCvsLJetTags')
 )
