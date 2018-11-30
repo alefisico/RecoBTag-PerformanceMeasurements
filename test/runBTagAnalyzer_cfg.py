@@ -285,6 +285,10 @@ options.register('storeDeepCSVVariables', True,
     VarParsing.multiplicity.singleton,
     VarParsing.varType.bool,
     'True if you want to keep DeepCSV Jet Variables')
+options.register('storeDeepDoubleBTagVariables', False,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.bool,
+    'True if you want to keep DeepDoubleB TaggingVariables')
 options.register('storePFElectronVariables', False,
     VarParsing.multiplicity.singleton,
     VarParsing.varType.bool,
@@ -292,7 +296,7 @@ options.register('storePFElectronVariables', False,
 options.register('storePFMuonVariables', False,
     VarParsing.multiplicity.singleton,
     VarParsing.varType.bool,
-    'True if you want to keep DeepCSV Jet Variables')
+    'True if you want to keep PF Muon Variables')
 options.register('defaults', '',
     VarParsing.multiplicity.singleton,
     VarParsing.varType.string,
@@ -592,6 +596,8 @@ bTagDiscriminators_no_deepFlavour = {i for i in bTagDiscriminators if 'DeepFlavo
 bTagDiscriminatorsFat = copy.deepcopy(bTagDiscriminators_no_deepFlavour)
 ## Add DeepDoubleB tagger to fat jets
 bTagDiscriminatorsFat.update(set(['pfDeepDoubleBJetTags:probH']))
+## Add DeepDoubleB tag infos
+bTagInfosFat += ([] if options.useLegacyTaggers else ['pfDeepDoubleBTagInfos'])
 
 if options.runJetClustering:
     options.remakeAllDiscr = True
@@ -1450,6 +1456,7 @@ process.btagana.storeTagVariables     = False  ## True if you want to keep TagIn
 process.btagana.storeCSVTagVariables  = options.storeCSVTagVariables   ## True if you want to keep CSV TaggingVariables
 process.btagana.storeCSVTagTrackVariables  = options.storeCSVTagTrackVariables   ## True if you want to keep CSV Tagging Track Variables
 process.btagana.storeDeepFlavourTagVariables = options.storeDeepFlavourTagVariables
+process.btagana.storeDeepDoubleBTagVariables = options.storeDeepDoubleBTagVariables
 process.btagana.primaryVertexColl     = cms.InputTag(pvSource)
 process.btagana.Jets                  = cms.InputTag(patJetSource)
 process.btagana.muonCollectionName    = cms.InputTag(muSource)
@@ -1497,6 +1504,7 @@ if options.runFatJets:
         storeTagVariables   = cms.bool(False),
         storeDeepFlavourVariables = cms.bool(False),
         storeDeepFlavourTagVariables = cms.bool(False),
+        storeDeepDoubleBTagVariables = cms.bool(True),
         deepFlavourJetTags = cms.string(''),
         deepFlavourNegJetTags = cms.string(''),
         storeTagVariablesSubJets = cms.bool(False),

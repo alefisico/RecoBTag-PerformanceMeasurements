@@ -73,6 +73,7 @@
 #include "SimTracker/TrackHistory/interface/TrackCategories.h"
 #include "SimTracker/TrackHistory/interface/TrackClassifier.h"
 #include "DataFormats/BTauReco/interface/SoftLeptonTagInfo.h"
+#include "DataFormats/BTauReco/interface/DeepDoubleBFeatures.h"
 #include "DataFormats/BTauReco/interface/DeepFlavourFeatures.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/Electron.h"
@@ -344,6 +345,7 @@ private:
   std::string softPFMuonTagInfos_;
   std::string softPFElectronTagInfos_;
   std::string bdsvTagInfos_;
+  std::string deepDoubleBTagInfos_;
 
   edm::EDGetTokenT<reco::VertexCollection> primaryVertexColl_;
   edm::EDGetTokenT<reco::TrackCollection> tracksColl_;
@@ -391,6 +393,7 @@ private:
   bool storeDeepCSVVariables_;
   bool storeDeepFlavourVariables_;
   bool storeDeepFlavourTagVariables_;
+  bool storeDeepDoubleBTagVariables_;
   bool storeCSVTagVariablesSubJets_;
   bool storeCSVTagTrackVariablesSubJets_;
   bool storePFElectronVariables_;
@@ -567,6 +570,7 @@ BTagAnalyzerT<IPTI,VTX>::BTagAnalyzerT(const edm::ParameterSet& iConfig):
   storeDeepCSVVariables_ = iConfig.getParameter<bool>("storeDeepCSVVariables");
   storeDeepFlavourVariables_ = iConfig.getParameter<bool>("storeDeepFlavourVariables");
   storeDeepFlavourTagVariables_  = iConfig.getParameter<bool>("storeDeepFlavourTagVariables");
+  storeDeepDoubleBTagVariables_  = iConfig.getParameter<bool>("storeDeepDoubleBTagVariables");
   storeCSVTagVariablesSubJets_ = iConfig.getParameter<bool>("storeCSVTagVariablesSubJets");
   storeCSVTagTrackVariablesSubJets_ = iConfig.getParameter<bool>("storeCSVTagTrackVariablesSubJets");
   storePFElectronVariables_ = iConfig.getParameter<bool>("storePFElectronVariables");
@@ -670,6 +674,7 @@ BTagAnalyzerT<IPTI,VTX>::BTagAnalyzerT(const edm::ParameterSet& iConfig):
   softPFMuonTagInfos_      = iConfig.getParameter<std::string>("softPFMuonTagInfos");
   softPFElectronTagInfos_  = iConfig.getParameter<std::string>("softPFElectronTagInfos");
   bdsvTagInfos_            = iConfig.getParameter<std::string>("bdsvTagInfos");
+  deepDoubleBTagInfos_     = iConfig.getParameter<std::string>("deepDoubleBTagInfos");
 
   muonCollectionName_       = consumes<edm::View<reco::Muon>>(iConfig.getParameter<edm::InputTag>("muonCollectionName"));
   patMuonCollectionName_    = consumes<std::vector<pat::Muon>>(iConfig.getParameter<edm::InputTag>("patMuonCollectionName"));
@@ -740,6 +745,9 @@ BTagAnalyzerT<IPTI,VTX>::BTagAnalyzerT(const edm::ParameterSet& iConfig):
   if ( storeDeepFlavourVariables_) JetInfo[0].RegisterJetDeepFlavourTree(smalltree,branchNamePrefix_);
   std::cout << "storeDeepFlavourTagVariables_: " << storeDeepFlavourTagVariables_ << std::endl;
   if ( storeDeepFlavourTagVariables_) JetInfo[0].RegisterDeepFlavourFeatTree(smalltree,branchNamePrefix_);
+  std::cout << "storeDeepDoubleBTagVariables_: " << storeDeepDoubleBTagVariables_ << std::endl;
+  if ( storeDeepDoubleBTagVariables_) JetInfo[0].RegisterDeepDoubleBFeatTree(smalltree,branchNamePrefix_);
+  std::cout << "storeDeepBoostedJetVariables_: " << storeDeepBoostedJetVariables_ << std::endl;
   if ( storeCTagVariables_) JetInfo[0].RegisterCTagVarTree(smalltree,branchNamePrefix_);
   if ( storePFElectronVariables_) JetInfo[0].RegisterPFElectronTree(smalltree,branchNamePrefix_);
   if ( storePFMuonVariables_) JetInfo[0].RegisterPFMuonTree(smalltree,branchNamePrefix_);
@@ -1770,6 +1778,8 @@ void BTagAnalyzerT<IPTI,VTX>::processJets(const edm::Handle<PatJetCollection>& j
   JetInfo[iJetColl].nTrkCTagVar = 0;
   JetInfo[iJetColl].nTrkEtaRelCTagVar = 0;
   JetInfo[iJetColl].nLeptons = 0;  
+  JetInfo[iJetColl].nTrkDeepDoubleB = 0;
+  JetInfo[iJetColl].nSVDeepDoubleB = 0;
 
   //Initialize new test variables for AK4 jets: to be cleaned up in the future
   JetInfo[iJetColl].Jet_trackSip2dSig_AboveBottom_0[JetInfo[iJetColl].nJet] = -19.;
@@ -3498,6 +3508,41 @@ void BTagAnalyzerT<IPTI,VTX>::processJets(const edm::Handle<PatJetCollection>& j
       JetInfo[iJetColl].Jet_nSV_fat[JetInfo[iJetColl].nJet] = vars.get(reco::btau::jetNSecondaryVertices);
       //--------------------------
     }
+
+      //--------------------------
+      // DeepDoubleB InputFeatures
+	if(storeDeepDoubleBTagVariables_) {
+		auto ddb_taginfo = static_cast<const reco::DeepDoubleBTagInfo*>(pjet->tagInfo(deepDoubleBTagInfos_));
+		if(!ddb_taginfo) {
+			throw cms::Exception("CorruptData") << "The jet collection does not have the DeepDoubleB TagInfos embedded!";
+		}
+		const auto & features = ddb_taginfo->features();
+
+		size_t csize = features.c_pf_features.size();
+      		JetInfo[iJetColl].Jet_DeepDoubleB_nFirstTrkTagVar[JetInfo[iJetColl].nJet] = JetInfo[iJetColl].nTrkDeepDoubleB;
+		for(size_t t = 0; t < csize; t++){
+			JetInfo[iJetColl].DeepDoubleBInput_charged_EtaRel[ JetInfo[iJetColl].nTrkDeepDoubleB+t ] = features.c_pf_features[t].btagPf_trackEtaRel;
+			JetInfo[iJetColl].DeepDoubleBInput_charged_PtRatio[ JetInfo[iJetColl].nTrkDeepDoubleB+t ] = features.c_pf_features[t].btagPf_trackPtRatio;
+			JetInfo[iJetColl].DeepDoubleBInput_charged_PParRatio[ JetInfo[iJetColl].nTrkDeepDoubleB+t ] = features.c_pf_features[t].btagPf_trackPParRatio;
+			JetInfo[iJetColl].DeepDoubleBInput_charged_Sip2dVal[ JetInfo[iJetColl].nTrkDeepDoubleB+t ] = features.c_pf_features[t].btagPf_trackSip2dVal;
+			JetInfo[iJetColl].DeepDoubleBInput_charged_Sip2dSig[ JetInfo[iJetColl].nTrkDeepDoubleB+t ] = features.c_pf_features[t].btagPf_trackSip2dSig;
+			JetInfo[iJetColl].DeepDoubleBInput_charged_Sip3dVal[ JetInfo[iJetColl].nTrkDeepDoubleB+t ] = features.c_pf_features[t].btagPf_trackSip3dVal;
+			JetInfo[iJetColl].DeepDoubleBInput_charged_Sip3dSig[ JetInfo[iJetColl].nTrkDeepDoubleB+t ] = features.c_pf_features[t].btagPf_trackSip3dSig;
+			JetInfo[iJetColl].DeepDoubleBInput_charged_JetDistVal[ JetInfo[iJetColl].nTrkDeepDoubleB+t ] = features.c_pf_features[t].btagPf_trackJetDistVal;
+		}
+		JetInfo[iJetColl].nTrkDeepDoubleB += csize;
+      		JetInfo[iJetColl].Jet_DeepDoubleB_nLastTrkTagVar[JetInfo[iJetColl].nJet] = JetInfo[iJetColl].nTrkDeepDoubleB;
+
+		size_t svsize = features.sv_features.size();
+      		JetInfo[iJetColl].Jet_DeepDoubleB_nFirstSVTagVar[JetInfo[iJetColl].nJet] = JetInfo[iJetColl].nSVDeepDoubleB;
+		for(size_t sv = 0; sv < svsize; sv++){
+			JetInfo[iJetColl].DeepDoubleBInput_sv_d3d[ JetInfo[iJetColl].nSVDeepDoubleB+sv ] = features.sv_features[sv].d3d;
+			JetInfo[iJetColl].DeepDoubleBInput_sv_d3dsig[ JetInfo[iJetColl].nSVDeepDoubleB+sv ] = features.sv_features[sv].d3dsig;
+		}
+		JetInfo[iJetColl].nSVDeepDoubleB += svsize;
+      		JetInfo[iJetColl].Jet_DeepDoubleB_nLastSVTagVar[JetInfo[iJetColl].nJet] = JetInfo[iJetColl].nSVDeepDoubleB;
+		//--------------------------
+	}
 
 
     cap0=0; cap1=0; cap2=0; cap3=0; cap4=0; cap5=0; cap6=0; cap7=0; cap8=0;
