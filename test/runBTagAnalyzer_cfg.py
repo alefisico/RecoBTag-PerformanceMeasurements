@@ -587,19 +587,19 @@ bTagDiscriminators = set([
   , 'pfNegativeDeepFlavourJetTags:probc'
   , 'pfNegativeDeepFlavourJetTags:probuds'
   , 'pfNegativeDeepFlavourJetTags:probg'
-    # DeepFlavour with pruned input
-  , 'pfDeepFlavourPrunedJetTags:probb'
-  , 'pfDeepFlavourPrunedJetTags:probbb'
-  , 'pfDeepFlavourPrunedJetTags:problepb'
-  , 'pfDeepFlavourPrunedJetTags:probc'
-  , 'pfDeepFlavourPrunedJetTags:probuds'
-  , 'pfDeepFlavourPrunedJetTags:probg'
-  , 'pfNegativeDeepFlavourPrunedJetTags:probb'
-  , 'pfNegativeDeepFlavourPrunedJetTags:probbb'
-  , 'pfNegativeDeepFlavourPrunedJetTags:problepb'
-  , 'pfNegativeDeepFlavourPrunedJetTags:probc'
-  , 'pfNegativeDeepFlavourPrunedJetTags:probuds'
-  , 'pfNegativeDeepFlavourPrunedJetTags:probg'
+#    # DeepFlavour with pruned input
+#  , 'pfDeepFlavourPrunedJetTags:probb'
+#  , 'pfDeepFlavourPrunedJetTags:probbb'
+#  , 'pfDeepFlavourPrunedJetTags:problepb'
+#  , 'pfDeepFlavourPrunedJetTags:probc'
+#  , 'pfDeepFlavourPrunedJetTags:probuds'
+#  , 'pfDeepFlavourPrunedJetTags:probg'
+#  , 'pfNegativeDeepFlavourPrunedJetTags:probb'
+#  , 'pfNegativeDeepFlavourPrunedJetTags:probbb'
+#  , 'pfNegativeDeepFlavourPrunedJetTags:problepb'
+#  , 'pfNegativeDeepFlavourPrunedJetTags:probc'
+#  , 'pfNegativeDeepFlavourPrunedJetTags:probuds'
+#  , 'pfNegativeDeepFlavourPrunedJetTags:probg'
 
 ])
 
